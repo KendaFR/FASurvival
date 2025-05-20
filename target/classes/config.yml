@@ -1,0 +1,9 @@
+###################################################
+#                  Author: Kenda                   #
+#               Created: 20/05/2025                #
+#               Plugin: FASurvival               #
+#  github: https://github.com/KendaFR/FASurvival   #
+###################################################
+
+#Check update of plugin
+check_update: false
