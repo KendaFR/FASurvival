@@ -1,5 +1,6 @@
 package fr.kenda.fasurvie.updater;
 
+import fr.kenda.fasurvie.util.Logger;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -40,13 +41,13 @@ public class PluginUpdater {
 
             // Comparer les versions
             if (!CURRENT_VERSION.equals(latestVersion)) {
-                System.out.println("Une nouvelle version est disponible : " + latestVersion);
+                Logger.info("Une nouvelle version est disponible : " + latestVersion);
             } else {
-                System.out.println("Vous utilisez la dernière version.");
+                Logger.success("Vous utilisez la dernière version.");
             }
 
         } catch (Exception e) {
-            System.out.println("Erreur lors de la vérification des mises à jour : " + e.getMessage());
+            Logger.error("Erreur lors de la vérification des mises à jour : " + e.getMessage());
         }
     }
 }
