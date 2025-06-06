@@ -1,0 +1,51 @@
+package fr.kenda.fasurvie.data;
+
+import fr.kenda.fasurvie.FASurvival;
+import fr.kenda.fasurvie.managers.DataManager;
+import fr.kenda.fasurvie.managers.DatabaseManager;
+import fr.kenda.fasurvie.managers.Managers;
+import org.bukkit.entity.Player;
+
+public class PlayerData {
+
+    private final Player player;
+    private int coins;
+
+    public PlayerData(Player player) {
+        this.player = player;
+        this.coins = 0;
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public int getCoins() {
+        return coins;
+    }
+
+    public void addCoins(int coins) {
+        this.coins += coins;
+    }
+
+    public void removeCoins(int coins) {
+        this.coins -= coins;
+    }
+    public void loadData()
+    {
+        Managers managers = FASurvival.getInstance().getManager();
+        managers.getManager(DatabaseManager.class).loadData(this);
+        managers.getManager(DataManager.class).addPlayerData(this);
+    }
+
+    public void saveData()
+    {
+        Managers managers = FASurvival.getInstance().getManager();
+        managers.getManager(DatabaseManager.class).saveData(this);
+        managers.getManager(DataManager.class).removePlayerData(this);
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
+    }
+}

@@ -1,13 +1,13 @@
 package fr.kenda.fasurvie;
 
-import fr.kenda.fasurvie.service.managers.Managers;
+import fr.kenda.fasurvie.managers.Managers;
 import fr.kenda.fasurvie.updater.PluginUpdater;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class FASurvival extends JavaPlugin {
 
-public static final String PREFIX = ChatColor.WHITE + "[" + ChatColor.AQUA + "FreshAgency" + ChatColor.WHITE + "] ";
+    public static final String PREFIX = ChatColor.WHITE + "[" + ChatColor.AQUA + "FreshAgency" + ChatColor.WHITE + "] ";
     private static FASurvival instance;
     private Managers manager;
 

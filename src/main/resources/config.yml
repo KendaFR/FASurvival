@@ -7,3 +7,30 @@
 
 #Check update of plugin
 check_update: false
+
+#Maximum de la durabilité du tracker
+max_durability: 10
+
+#Duration de l'action bar du tracker
+duration_tracker: 5
+
+#Delai entre chaque utilisation
+cooldown_between_use: 6
+
+#Monnaie du serveur
+fresh_coin:
+  send_message_to_player_receive: false
+  name: "&bFresh&aCoins"
+  material: NETHER_STAR
+  lore:
+    - "&7&lMonnaie du jeu"
+    - "&7&lEchangeable contre le pnj au spawn"
+    - "&7&lPour monté dans le classement"
+  craft:
+    - "EDE"
+    - "DND"
+    - "EDE"
+  reference:
+    E: EMERALD
+    D: DIAMOND
+    N: NETHER_STAR
