@@ -17,7 +17,7 @@ public class QuitEvent implements Listener {
     {
         Player p = e.getPlayer();
         PlayerData pd = FASurvival.getInstance().getManager().getManager(DataManager.class).getPlayerDataFromPlayer(p);
-        pd.saveData();
+        pd.saveData(true);
 
         e.setQuitMessage(ChatColor.WHITE + "[" + ChatColor.RED + "-" + ChatColor.WHITE + "]" + ChatColor.YELLOW + p.getName() + " a quitter le serveur");
     }

@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Item;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -21,6 +22,13 @@ public class KitGui extends Gui {
 
     @Override
     public void handleInventoryClick(InventoryClickEvent event) {
+        if (!event.getView().getTitle().equals(title)) {
+            return;
+        }
+        if (event.getClickedInventory() == null || !event.getClickedInventory().equals(inventory)) {
+            return;
+        }
+
         event.setCancelled(true);
         ItemStack current = event.getCurrentItem();
         if (current == null || current.getType() == Material.AIR) return;
@@ -33,6 +41,11 @@ public class KitGui extends Gui {
                 updateContents(showKit(kitName));
             }
         }
+    }
+
+    @Override
+    public void handleInventoryDrag(InventoryDragEvent event) {
+
     }
 
     @Override

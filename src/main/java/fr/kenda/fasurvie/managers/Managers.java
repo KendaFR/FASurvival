@@ -2,10 +2,7 @@ package fr.kenda.fasurvie.managers;
 
 import fr.kenda.fasurvie.FASurvival;
 import fr.kenda.fasurvie.commands.FACommand;
-import fr.kenda.fasurvie.event.CancelCraft;
-import fr.kenda.fasurvie.event.JoinEvent;
-import fr.kenda.fasurvie.event.QuitEvent;
-import fr.kenda.fasurvie.event.TrackerEvent;
+import fr.kenda.fasurvie.event.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 
@@ -48,6 +45,7 @@ public class Managers {
     }
 
     private void registerManagers() {
+        FASurvival instance = FASurvival.getInstance();
         registerManager(new EventManager());
         registerManager(new MapManager());
         registerManager(new FileManager());
@@ -57,6 +55,7 @@ public class Managers {
         registerManager(new DatabaseManager(FASurvival.getInstance(), "player_data"));
         registerManager(new DataManager());
         registerManager(new ScoreboardManager());
+        registerManager(new PNJManager(instance));
     }
 }
 

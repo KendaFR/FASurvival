@@ -136,7 +136,8 @@ public class DatabaseManager implements IManager {
             pstmt.setInt(1, limit);
             ResultSet result = pstmt.executeQuery();
             while (result.next())
-                names.add(new PlayerDatabase(result.getInt("id"), result.getString("player_name"), result.getInt("coins")));
+                names.add(new PlayerDatabase(result.getInt("id"), result.getString("player_name"),
+                        result.getInt("coins")));
             return names;
         } catch (SQLException e) {
             logger.severe("Erreur lors de la création de l'entrée joueur: " + e.getMessage());

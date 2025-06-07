@@ -34,3 +34,15 @@ fresh_coin:
     E: EMERALD
     D: DIAMOND
     N: NETHER_STAR
+
+#PNJ qui va géré le système de score
+pnj:
+  name: "&6&lMarchand de Scores"
+  location:
+    world: "world"
+    x: 0.5
+    y: 50.5
+    z: 0.5
+
+#Refresh tout les combiens de temps? (-1 = temps réel)
+refresh_time: -1

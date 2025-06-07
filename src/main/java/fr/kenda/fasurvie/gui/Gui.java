@@ -9,6 +9,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -38,13 +39,6 @@ public abstract class Gui {
                 if (!event.getWhoClicked().equals(owner)) {
                     return;
                 }
-                if (!event.getView().getTitle().equals(title)) {
-                    return;
-                }
-                if (event.getClickedInventory() == null || !event.getClickedInventory().equals(inventory)) {
-                    return;
-                }
-
                 handleInventoryClick(event);
             }
 
@@ -56,12 +50,24 @@ public abstract class Gui {
                 if (!event.getPlayer().equals(owner)) {
                     return;
                 }
+
+                handleInventoryClose(event);
+                HandlerList.unregisterAll(playerListener);
+            }
+
+            @EventHandler
+            public void onInventoryDrag(InventoryDragEvent event) {
+                if (!(event.getWhoClicked() instanceof Player)) {
+                    return;
+                }
+                if (!event.getWhoClicked().equals(owner)) {
+                    return;
+                }
                 if (!event.getView().getTitle().equals(title)) {
                     return;
                 }
 
-                handleInventoryClose(event);
-                HandlerList.unregisterAll(playerListener);
+                handleInventoryDrag(event);
             }
         };
 
@@ -77,6 +83,8 @@ public abstract class Gui {
     }
 
     public abstract void handleInventoryClick(InventoryClickEvent event);
+
+    public abstract void handleInventoryDrag(InventoryDragEvent event);
 
     public abstract void handleInventoryClose(InventoryCloseEvent event);
 
