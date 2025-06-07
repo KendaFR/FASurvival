@@ -1,24 +1,23 @@
 package fr.kenda.fasurvie.commands;
 
 import fr.kenda.fasurvie.FASurvival;
+import fr.kenda.fasurvie.util.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
-public class SpawnMob implements SubCommand {
+public class SpawnItem implements SubCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        if (args.length != 2) {
+        if (args.length != 3) {
             sendHelp(sender);
             return true;
         }
@@ -29,10 +28,11 @@ public class SpawnMob implements SubCommand {
             return true;
         }
         try {
-            EntityType mobType = EntityType.valueOf(args[1].toUpperCase());
+            Material material = Material.valueOf(args[1].toUpperCase());
+            int number = Integer.parseInt(args[2]);
 
-            target.getWorld().spawnEntity(target.getLocation().clone().add(new Vector(0, 1, 0)), mobType);
-            sender.sendMessage(FASurvival.PREFIX + ChatColor.GREEN + "Mob apparu sur " + target.getName());
+            target.getInventory().addItem(new ItemBuilder(material, number).build());
+            sender.sendMessage(FASurvival.PREFIX + ChatColor.GREEN + "Item donné à " + target.getName());
             return true;
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -42,23 +42,23 @@ public class SpawnMob implements SubCommand {
 
     @Override
     public String getName() {
-        return "mob";
+        return "item";
     }
 
     @Override
     public void sendHelp(CommandSender sender) {
-        sender.sendMessage(FASurvival.PREFIX + ChatColor.GRAY + "/fas " + getName() + " <player> <mob>: " + ChatColor.RED + "Fait spawn un mob sur le joueur");
+        sender.sendMessage(FASurvival.PREFIX + ChatColor.GRAY + "/fas " + getName() + " <player> <item> <number>: " + ChatColor.RED + "Donne un item au joueur");
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args) {
         if (args.length == 2) {
             String prefix = args[1].toLowerCase();
-            List<String> mobNames = new ArrayList<>();
-            Arrays.stream(EntityType.values())
-                    .forEach(type -> mobNames.add(type.name().toLowerCase()));
-            mobNames.removeIf(s -> !s.startsWith(prefix));
-            return mobNames;
+            List<String> itemNames = new ArrayList<>();
+            Arrays.stream(Material.values())
+                    .forEach(type -> itemNames.add(type.name().toLowerCase()));
+            itemNames.removeIf(s -> !s.startsWith(prefix));
+            return itemNames;
         }
         return List.of();
     }
