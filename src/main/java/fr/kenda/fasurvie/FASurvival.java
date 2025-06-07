@@ -1,7 +1,9 @@
 package fr.kenda.fasurvie;
 
+import fr.kenda.fasurvie.managers.BackupDataManager;
 import fr.kenda.fasurvie.managers.Managers;
 import fr.kenda.fasurvie.updater.PluginUpdater;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,6 +21,12 @@ public final class FASurvival extends JavaPlugin {
             new PluginUpdater().checkForUpdates();
 
         manager = new Managers();
+
+        Bukkit.getScheduler().runTaskLater(this, () ->
+        {
+            //manager.getManager(BackupDataManager.class).runTestScheduler();
+            manager.getManager(BackupDataManager.class).start();
+        }, 60L);
     }
 
     @Override

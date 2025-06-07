@@ -9,6 +9,8 @@ import fr.kenda.fasurvie.FASurvival;
 import fr.kenda.fasurvie.data.PlayerData;
 import fr.kenda.fasurvie.data.PlayerDatabase;
 import org.bukkit.plugin.java.JavaPlugin;
+
+
 public class DatabaseManager implements IManager {
 
     private Connection connection;

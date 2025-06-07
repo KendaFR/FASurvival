@@ -1,8 +1,6 @@
 package fr.kenda.fasurvie.managers;
 
-import fr.kenda.fasurvie.gui.KitGui;
 import fr.kenda.fasurvie.gui.ScoreGUI;
-import fr.kenda.fasurvie.util.FileName;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -44,11 +42,16 @@ public class PNJManager implements IManager, Listener {
 
 
         Bukkit.getWorlds().forEach(world ->
-                world.getEntities().forEach(entity ->
-                {
-                    if (entity.getName().equalsIgnoreCase(pnjName))
-                        entity.remove();
-                }));
+                world.getEntities().forEach(entity -> {
+                    if (entity instanceof Villager) {
+                        Villager v = (Villager) entity;
+                        if (v.getCustomName() != null) {
+                            v.remove();
+                        }
+                    }
+                })
+        );
+
         createPNJ();
     }
 
@@ -143,7 +146,7 @@ public class PNJManager implements IManager, Listener {
     }
 
     private void handlePNJInteraction(Player player) {
-        new ScoreGUI(pnjName, 1).create(player);
+        new ScoreGUI(pnjName, 5).create(player);
     }
 
     public void recreatePNJ() {

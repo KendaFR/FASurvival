@@ -1,32 +1,37 @@
 package fr.kenda.fasurvie.scheduler;
 
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scoreboard.Score;
+import fr.kenda.fasurvie.managers.ScoreboardManager;
+import fr.kenda.fasurvie.util.Config;
+import fr.kenda.fasurvie.util.TimeUnit;
+import org.bukkit.ChatColor;
 
-public class ScoreboardRefreshScheduler extends BukkitRunnable {
+public class ScoreboardRefreshScheduler implements Runnable {
 
-    private int initialTimer;
-    private int timer;
-    private int delayToNext;
+    private long timer;
+    private int refreshInterval;
+    private ScoreboardManager scoreboardManager;
 
-    public ScoreboardRefreshScheduler(int delayToNext, int initialTimer)
-    {
-        this.timer = delayToNext;
-        this.delayToNext = delayToNext;
-        this.initialTimer = initialTimer;
-    }
-
-    public ScoreboardRefreshScheduler(int initialTimer)
-    {
-        this(-1, initialTimer);
+    public ScoreboardRefreshScheduler(long delayUntilNext, int refreshInterval, ScoreboardManager scoreboardManager) {
+        this.timer = delayUntilNext / 1000; // Convertir en secondes
+        this.refreshInterval = refreshInterval;
+        this.scoreboardManager = scoreboardManager;
     }
 
     @Override
     public void run() {
-        if(delayToNext > 0) {
-            delayToNext--;
+        timer--;
+
+        if (timer <= 0) {
+            timer = refreshInterval;
+
+            // Rafraîchir le leaderboard ici si nécessaire
+            scoreboardManager.refreshLeaderboard();
         }
-        else
-            timer--;
+
+        // Mettre à jour la ligne du compte à rebours si le refresh est activé
+        if (Config.getInt("refresh_time") > 0) {
+            String timeLeft = TimeUnit.format(timer * 1000L);
+            scoreboardManager.updateLineForAll(12, ChatColor.GOLD + timeLeft);
+        }
     }
 }

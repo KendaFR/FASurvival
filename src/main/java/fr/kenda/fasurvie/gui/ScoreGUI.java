@@ -2,6 +2,7 @@ package fr.kenda.fasurvie.gui;
 
 import fr.kenda.fasurvie.FASurvival;
 import fr.kenda.fasurvie.managers.DataManager;
+import fr.kenda.fasurvie.managers.ScoreboardManager;
 import fr.kenda.fasurvie.util.Config;
 import fr.kenda.fasurvie.util.Constant;
 import org.bukkit.Bukkit;
@@ -116,6 +117,16 @@ public class ScoreGUI extends Gui {
                 .getManager(DataManager.class)
                 .getPlayerDataFromPlayer(player)
                 .addCoins(coins);
+
+        FASurvival.getInstance()
+                .getManager()
+                .getManager(DataManager.class)
+                .getPlayerDataFromPlayer(player).saveData(false);
+
+        Bukkit.getScheduler().runTaskLater(FASurvival.getInstance(), () -> {
+            if (Config.getInt("refresh_time") <= 0)
+                FASurvival.getInstance().getManager().getManager(ScoreboardManager.class).refreshLeaderboard();
+        }, 20L);
     }
 
     @Override

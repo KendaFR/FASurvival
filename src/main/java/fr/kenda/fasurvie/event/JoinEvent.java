@@ -28,7 +28,7 @@ public class JoinEvent implements Listener {
         List<PlayerDatabase> leaderBoard = FASurvival.getInstance().getManager().getManager(DatabaseManager.class).getLeaderboard(5);
         List<String> lines = scoreboardManager.getBorderedLeaderboard(leaderBoard);
 
-        scoreboardManager.updateLinesForPlayer(p, lines.toArray(new String[0]));
+        scoreboardManager.updateLinesForPlayer(p, List.of(lines.toArray(new String[0])));
     }
 }
 

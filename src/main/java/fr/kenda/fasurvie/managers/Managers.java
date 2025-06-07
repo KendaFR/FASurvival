@@ -46,16 +46,18 @@ public class Managers {
 
     private void registerManagers() {
         FASurvival instance = FASurvival.getInstance();
+        DatabaseManager db =  new DatabaseManager(instance, "player_data");
         registerManager(new EventManager());
         registerManager(new MapManager());
         registerManager(new FileManager());
         registerManager(new CommandManager());
         registerManager(new TrackerManager());
         registerManager(new CraftManager());
-        registerManager(new DatabaseManager(FASurvival.getInstance(), "player_data"));
+        registerManager(db);
         registerManager(new DataManager());
         registerManager(new ScoreboardManager());
         registerManager(new PNJManager(instance));
+        registerManager(new BackupDataManager(instance, db, "player_data"));
     }
 }
 

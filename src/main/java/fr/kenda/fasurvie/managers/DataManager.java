@@ -31,4 +31,12 @@ public class DataManager implements IManager {
     public PlayerData getPlayerDataFromPlayer(Player player) {
         return playerDataList.stream().filter(playerData -> playerData.getPlayer() == player).findFirst().orElse(null);
     }
+
+    public void recreate() {
+        playerDataList.forEach(playerData ->
+        {
+            playerData.setCoins(0);
+            playerData.saveData(false);
+        });
+    }
 }

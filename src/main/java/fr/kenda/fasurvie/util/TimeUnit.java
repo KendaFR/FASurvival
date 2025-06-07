@@ -1,5 +1,4 @@
 package fr.kenda.fasurvie.util;
-
 public class TimeUnit {
 
     public static String format(double milliseconds) {
@@ -28,8 +27,23 @@ public class TimeUnit {
         return result.toString().trim();
     }
 
-    public static String calculateDifference(double milliseconds, double objective)
-    {
-        return format(objective - milliseconds);
+    public static String calculateDifference(double current, double target) {
+        return format(target - current);
+    }
+
+    public static long millisUntilNextHour() {
+        long now = System.currentTimeMillis();
+        return now - (now % (60 * 60 * 1000)) + (60 * 60 * 1000);
+    }
+
+    /**
+     * Calcule le temps en millisecondes jusqu'au prochain intervalle
+     * @param intervalMs Intervalle en millisecondes (ex: 60000 pour 1 minute, 3600000 pour 1 heure)
+     * @return Millisecondes jusqu'au prochain intervalle complet
+     */
+    public static long millisUntilNext(long intervalMs) {
+        long now = System.currentTimeMillis();
+        long remainder = now % intervalMs;
+        return intervalMs - remainder;
     }
 }
