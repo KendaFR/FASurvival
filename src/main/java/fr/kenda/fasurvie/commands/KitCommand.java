@@ -48,15 +48,15 @@ public class KitCommand implements SubCommand {
                 player.sendMessage(FASurvival.PREFIX + ChatColor.RED + "Vous ne pouvez pas crée de kit vide.");
                 return false;
             }
-            handleCreateKit(fileManager, player, args[1]);
+            handleCreateKit(fileManager, player, args[1].toLowerCase());
             return true;
         } else if (args.length == 2 && args[0].equalsIgnoreCase("delete")) {
-            handleDeleteKit(fileManager, player, args[1]);
+            handleDeleteKit(fileManager, player, args[1].toLowerCase());
             return true;
         }
         else if(args.length == 3)
         {
-            handleGiveKit(fileManager, player, args[1], args[2]);
+            handleGiveKit(fileManager, player, args[1], args[2].toLowerCase());
             return true;
         }
         return true;
@@ -68,9 +68,18 @@ public class KitCommand implements SubCommand {
             sender.sendMessage(FASurvival.PREFIX + ChatColor.RED + "Le joueur " + target + " n'est pas connecté.");
             return;
         }
+
+        // Check if the kit exists before trying to deserialize
+        FileConfiguration config = fileManager.getConfigFrom(FileName.KIT_FILE);
+        String kitData = config.getString(pathKit + kit);
+        if (kitData == null) {
+            sender.sendMessage(FASurvival.PREFIX + ChatColor.RED + "Le kit '" + kit + "' n'existe pas.");
+            return;
+        }
+
         ItemStack[] k;
         try {
-            k = InventorySerialize.deserializeInventory(fileManager.getConfigFrom(FileName.KIT_FILE).getString(pathKit + kit));
+            k = InventorySerialize.deserializeInventory(kitData);
             for (ItemStack itemStack : k) {
                 if (itemStack == null) continue;
                 HashMap<Integer, ItemStack> left = t.getInventory().addItem(itemStack);
@@ -84,11 +93,9 @@ public class KitCommand implements SubCommand {
             t.sendMessage(FASurvival.PREFIX + ChatColor.GREEN + "Vous avez reçu le kit " + kit + ".");
         } catch (Exception e) {
             sender.sendMessage(FASurvival.PREFIX + ChatColor.RED + "Erreur lors de la récupération du kit !");
-            throw new RuntimeException(e);
+            e.printStackTrace(); // Keep the stack trace for debugging
         }
     }
-
-
 
     private boolean hasAtLeastOneItem(Player player) {
         return Stream.concat(
@@ -97,7 +104,6 @@ public class KitCommand implements SubCommand {
                 )
                 .anyMatch(item -> item != null && item.getType() != Material.AIR);
     }
-
 
     private void handleDeleteKit(FileManager fileManager, Player player, String arg) {
         FileConfiguration config = fileManager.getConfigFrom(FileName.KIT_FILE);
@@ -142,13 +148,19 @@ public class KitCommand implements SubCommand {
         if(configuration.getConfigurationSection(pathKit) == null)
             return kits;
 
-        configuration.getConfigurationSection(pathKit).getKeys(false).forEach(kit ->
-        {
+        configuration.getConfigurationSection(pathKit).getKeys(false).forEach(kit -> {
             try {
-                ItemStack[] inventory = InventorySerialize.deserializeInventory(configuration.getString(pathKit + kit));
-                kits.put(kit, inventory);
+                String kitData = configuration.getString(pathKit + kit);
+                if (kitData != null) { // Only process non-null kit data
+                    ItemStack[] inventory = InventorySerialize.deserializeInventory(kitData);
+                    kits.put(kit, inventory);
+                } else {
+                    // Log warning about corrupted kit data
+                    System.out.println("Warning: Kit '" + kit + "' has null data and will be skipped.");
+                }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                System.out.println("Error loading kit '" + kit + "': " + e.getMessage());
+                e.printStackTrace();
             }
         });
         return kits;

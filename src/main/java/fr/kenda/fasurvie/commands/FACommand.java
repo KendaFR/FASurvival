@@ -31,7 +31,7 @@ public class FACommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission(PERMISSION)) {
+        if (!sender.isOp() &&  !sender.hasPermission(PERMISSION)) {
             sender.sendMessage(ChatColor.RED + "Vous n'avez pas la permission de faire cette commande.");
             return true;
         }

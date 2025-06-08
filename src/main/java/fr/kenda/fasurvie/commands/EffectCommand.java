@@ -16,11 +16,10 @@ public class EffectCommand implements SubCommand {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        if (args.length != 3) {
+        if (args.length < 3 || args.length > 4) {
             sendHelp(sender);
             return true;
         }
-
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
             sender.sendMessage(FASurvival.PREFIX + ChatColor.RED + "Joueur introuvable.");
