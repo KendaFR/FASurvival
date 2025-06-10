@@ -58,7 +58,7 @@ public class KitGui extends Gui {
     public ItemStack[] getMainContents() {
         kitSlot.clear();
         ItemStack[] content = new ItemStack[size];
-        ItemStack decorator = new ItemBuilder(Material.STAINED_GLASS_PANE).color((byte)14).build();
+        ItemStack decorator = new ItemBuilder(Material.RED_STAINED_GLASS).build();
         Arrays.fill(content, decorator);
 
         int slot = 10;

@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Locale;
 
 public class SpawnMob implements SubCommand {
+
+    private static final List<String> ALLOWED_MOBS = Arrays.asList("speed", "test");
+
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (args.length != 2) {
@@ -31,6 +34,10 @@ public class SpawnMob implements SubCommand {
         try {
             EntityType mobType = EntityType.valueOf(args[1].toUpperCase());
 
+            if(!ALLOWED_MOBS.contains(args[1].toLowerCase())) {
+                sender.sendMessage(ChatColor.RED + "Vous ne pouvez pas faire apparaitre ce mob");
+                return false;
+            }
             target.getWorld().spawnEntity(target.getLocation().clone().add(new Vector(0, 1, 0)), mobType);
             sender.sendMessage(FASurvival.PREFIX + ChatColor.GREEN + "Mob apparu sur " + target.getName());
             return true;

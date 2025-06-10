@@ -14,6 +14,8 @@ import java.util.List;
 
 public class EffectCommand implements SubCommand {
 
+    private static final List<String> ALLOWED_EFFECT = Arrays.asList("speed", "test");
+
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (args.length < 3 || args.length > 4) {
@@ -41,10 +43,15 @@ public class EffectCommand implements SubCommand {
         }
 
         int amplifier = 1;
-        if (args.length >= 4) {
+        if (args.length == 4) {
             try {
                 amplifier = Integer.parseInt(args[3]);
             } catch (NumberFormatException ignored) {}
+        }
+
+        if(!ALLOWED_EFFECT.contains(effectType.getName())) {
+            sender.sendMessage(ChatColor.RED + "Vous ne pouvez pas appliquer cet effect au joueur");
+            return false;
         }
 
         target.addPotionEffect(new PotionEffect(effectType, duration * 20, amplifier - 1));

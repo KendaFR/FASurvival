@@ -68,7 +68,7 @@ public class ScoreGUI extends Gui {
 
     @Override
     public void handleInventoryClose(InventoryCloseEvent event) {
-        if (!event.getInventory().getTitle().equals(Config.getString("pnj.name"))) return;
+        if (!event.getView().getTitle().equals(Config.getString("pnj.name"))) return;
 
         Player player = (Player) event.getPlayer();
         List<ItemStack> items = Arrays.stream(this.inventory.getContents())

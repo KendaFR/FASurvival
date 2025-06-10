@@ -2,7 +2,6 @@ name: FASurvival
 version: '1.0-SNAPSHOT'
 main: fr.kenda.fasurvie.FASurvival
 load: POSTWORLD
-api-version: '1.8'
 authors: [ Kenda ]
 commands:
   FAsurvival:

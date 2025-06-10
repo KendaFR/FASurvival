@@ -128,7 +128,7 @@ public class TrackerManager implements IManager {
             trackerCooldowns.put(player.getUniqueId(), now);
 
             if (value == 0) {
-                player.playSound(player.getLocation(), Sound.ITEM_BREAK, 1.0f, 1.0f);
+                player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
                 player.sendMessage(FASurvival.PREFIX + ChatColor.RED + "Vous avez épuisé votre tracker.");
             }
         }

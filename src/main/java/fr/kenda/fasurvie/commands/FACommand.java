@@ -26,7 +26,8 @@ public class FACommand implements CommandExecutor, TabCompleter {
             new CompassTrackerCommand(),
             new SpawnMob(),
             new GiveFreshCoins(),
-            new SpawnItem()
+            new SpawnItem(),
+            new CleanDB()
     );
 
     @Override

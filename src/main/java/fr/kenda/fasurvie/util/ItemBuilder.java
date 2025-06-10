@@ -154,13 +154,6 @@ public class ItemBuilder {
         return this;
     }
 
-    public ItemBuilder unbreakable(boolean unbreakable) {
-        ItemMeta meta = this.item.getItemMeta();
-        meta.spigot().setUnbreakable(unbreakable);
-        this.item.setItemMeta(meta);
-        return this;
-    }
-
     public ItemBuilder glow() {
         // Fait briller l'item sans afficher les enchantements
         enchant(Enchantment.ARROW_INFINITE, 1);

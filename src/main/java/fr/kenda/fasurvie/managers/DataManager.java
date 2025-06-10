@@ -39,4 +39,8 @@ public class DataManager implements IManager {
             playerData.saveData(false);
         });
     }
+
+    public List<PlayerData> getPlayerDataList() {
+        return playerDataList;
+    }
 }

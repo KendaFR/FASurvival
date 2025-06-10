@@ -15,6 +15,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SpawnItem implements SubCommand {
+
+    private static final List<String> ALLOWED_ITEMS = Arrays.asList("speed", "test");
+
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (args.length != 3) {
@@ -30,6 +33,12 @@ public class SpawnItem implements SubCommand {
         try {
             Material material = Material.valueOf(args[1].toUpperCase());
             int number = Integer.parseInt(args[2]);
+
+            if(!ALLOWED_ITEMS.contains(args[1].toLowerCase()))
+            {
+                sender.sendMessage(ChatColor.RED + "Vous ne pouvez pas give cet item au joueur");
+                return false;
+            }
 
             target.getInventory().addItem(new ItemBuilder(material, number).build());
             sender.sendMessage(FASurvival.PREFIX + ChatColor.GREEN + "Item donné à " + target.getName());

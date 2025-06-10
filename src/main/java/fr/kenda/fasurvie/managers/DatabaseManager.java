@@ -41,6 +41,53 @@ public class DatabaseManager implements IManager {
         logger.info("Base de données SQLite déconnectée.");
     }
 
+    /**
+     * Nettoie complètement la base de données : déconnexion, suppression du dossier, reconnexion
+     */
+    public void clean() {
+        try {
+            // 1. Déconnexion de la base de données
+            disconnect();
+            logger.info("Déconnexion de la base de données effectuée.");
+
+            // 2. Suppression du dossier database
+            File databaseFolder = new File(plugin.getDataFolder(), "database");
+            if (databaseFolder.exists()) {
+                deleteFolder(databaseFolder);
+                logger.info("Dossier 'database' supprimé avec succès.");
+            } else {
+                logger.info("Le dossier 'database' n'existe pas, rien à supprimer.");
+            }
+
+            // 3. Reconnexion et recréation de la base de données
+            connect();
+            createPlayerDataTable();
+            logger.info("Base de données nettoyée et reconnectée avec succès !");
+
+        } catch (SQLException e) {
+            logger.severe("Erreur lors du nettoyage de la base de données: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Supprime récursivement un dossier et tout son contenu
+     */
+    private void deleteFolder(File folder) {
+        if (folder.exists()) {
+            File[] files = folder.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        deleteFolder(file);
+                    } else {
+                        file.delete();
+                    }
+                }
+            }
+            folder.delete();
+        }
+    }
+
     public void loadData(PlayerData playerData) {
         String query = "SELECT * FROM player_data WHERE player_name = ?";
 

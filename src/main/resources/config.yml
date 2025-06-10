@@ -46,3 +46,7 @@ pnj:
 
 #Refresh tout les combiens de temps? (-1 = temps réel)
 refresh_time: -1
+
+bot:
+  token: "ID"
+  channel_id: "ID"

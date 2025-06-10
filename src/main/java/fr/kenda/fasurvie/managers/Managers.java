@@ -3,6 +3,7 @@ package fr.kenda.fasurvie.managers;
 import fr.kenda.fasurvie.FASurvival;
 import fr.kenda.fasurvie.commands.FACommand;
 import fr.kenda.fasurvie.event.*;
+import fr.kenda.fasurvie.util.Config;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 
@@ -58,6 +59,7 @@ public class Managers {
         registerManager(new ScoreboardManager());
         registerManager(new PNJManager(instance));
         registerManager(new BackupDataManager(instance, db, "player_data"));
+        //registerManager(new BotManager(instance.getLogger(), Config.getString("bot.token"), Config.getString("bot.channel_id")));
     }
 }
 
