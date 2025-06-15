@@ -16,53 +16,40 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class CancelCraft implements Listener {
-
-    private boolean isFreshCoin(ItemStack item) {
-        if (item == null || item.getType() != Material.NETHER_STAR || !item.hasItemMeta()) return false;
-
-        ItemMeta meta = item.getItemMeta();
-        return meta.hasDisplayName() && ChatColor.stripColor(meta.getDisplayName()).equalsIgnoreCase("FreshCoins");
-    }
-
+public class CancelCraft
+        implements Listener {
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         for (ItemStack item : event.getInventory().getMatrix()) {
-            if (isFreshCoin(item)) {
-                event.getInventory().setResult(new ItemStack(Material.AIR));
-                event.getView().getPlayer().sendMessage(ChatColor.RED + "Tu ne peux pas crafter cet item avec un " + Constant.FRESH_COIN);
-                break;
-            }
+            if (!this.isFreshCoin(item)) continue;
+            event.getInventory().setResult(new ItemStack(Material.AIR));
+            event.getView().getPlayer().sendMessage(ChatColor.RED + "Tu ne peux pas crafter cet item avec un " + Constant.FRESH_COIN);
+            break;
         }
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getInventory().getType() != InventoryType.ANVIL) return;
-
+        AnvilInventory anvil;
+        if (event.getInventory().getType() != InventoryType.ANVIL) {
+            return;
+        }
         Player player = (Player) event.getWhoClicked();
         ItemStack clickedItem = event.getCurrentItem();
         ItemStack cursorItem = event.getCursor();
-
-        if (event.isShiftClick() && isFreshCoin(clickedItem)) {
+        if (event.isShiftClick() && this.isFreshCoin(clickedItem)) {
             event.setCancelled(true);
             player.sendMessage(ChatColor.RED + "Tu ne peux pas déplacer un " + Constant.FRESH_COIN + ChatColor.RED + " dans une enclume !");
             return;
         }
-
-        if (event.getSlot() <= 2 && isFreshCoin(cursorItem)) {
+        if (event.getSlot() <= 2 && this.isFreshCoin(cursorItem)) {
             event.setCancelled(true);
             player.sendMessage(ChatColor.RED + "Tu ne peux pas placer un " + Constant.FRESH_COIN + ChatColor.RED + " dans une enclume !");
             return;
         }
-
-        if (event.isShiftClick() && event.getSlot() > 2 && isFreshCoin(clickedItem)) {
-            AnvilInventory anvil = (AnvilInventory) event.getInventory();
-            if (anvil.getItem(0) == null || anvil.getItem(1) == null) {
-                event.setCancelled(true);
-                player.sendMessage(ChatColor.RED + "Tu ne peux pas placer un " + Constant.FRESH_COIN + ChatColor.RED + " dans une enclume !");
-                return;
-            }
+        if (event.isShiftClick() && event.getSlot() > 2 && this.isFreshCoin(clickedItem) && ((anvil = (AnvilInventory) event.getInventory()).getItem(0) == null || anvil.getItem(1) == null)) {
+            event.setCancelled(true);
+            player.sendMessage(ChatColor.RED + "Tu ne peux pas placer un " + Constant.FRESH_COIN + ChatColor.RED + " dans une enclume !");
         }
     }
 
@@ -71,20 +58,27 @@ public class CancelCraft implements Listener {
         if (event.getInventory().getType() == InventoryType.ANVIL) {
             final Player player = (Player) event.getPlayer();
             final AnvilInventory anvil = (AnvilInventory) event.getInventory();
-
             new BukkitRunnable() {
-                @Override
+
                 public void run() {
                     if (!player.getOpenInventory().getType().equals(InventoryType.ANVIL)) {
                         this.cancel();
                         return;
                     }
-
-                    if (isFreshCoin(anvil.getItem(0)) || isFreshCoin(anvil.getItem(1))) {
+                    if (CancelCraft.this.isFreshCoin(anvil.getItem(0)) || CancelCraft.this.isFreshCoin(anvil.getItem(1))) {
                         anvil.setItem(2, new ItemStack(Material.AIR));
                     }
                 }
             }.runTaskTimer(FASurvival.getInstance(), 1L, 1L);
         }
     }
+
+    private boolean isFreshCoin(ItemStack item) {
+        if (item == null || item.getType() != Material.NETHER_STAR || !item.hasItemMeta()) {
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        return meta.hasDisplayName() && ChatColor.stripColor(meta.getDisplayName()).equalsIgnoreCase("FreshCoins");
+    }
 }
+

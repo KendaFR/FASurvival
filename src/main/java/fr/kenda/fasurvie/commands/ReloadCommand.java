@@ -4,10 +4,10 @@ import fr.kenda.fasurvie.FASurvival;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-public class ReloadCommand implements SubCommand {
-
+public class ReloadCommand
+        implements SubCommand {
     @Override
-    public boolean execute(CommandSender sender, String[] args) {
+    public boolean execute(CommandSender sender, String[] args2, boolean isForced) {
         FASurvival.getInstance().getManager().reloadManagers();
         sender.sendMessage(FASurvival.PREFIX + ChatColor.GREEN + "Configuration rechargée !");
         return true;
@@ -20,7 +20,6 @@ public class ReloadCommand implements SubCommand {
 
     @Override
     public void sendHelp(CommandSender sender) {
-
     }
 }
 

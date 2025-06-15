@@ -1,49 +1,41 @@
 package fr.kenda.fasurvie.util;
+
 public class TimeUnit {
-
     public static String format(double milliseconds) {
-        long totalSeconds = (long) (milliseconds / 1000);
-
-        long days = totalSeconds / 86400;
-        long hours = (totalSeconds % 86400) / 3600;
-        long minutes = (totalSeconds % 3600) / 60;
-        long seconds = totalSeconds % 60;
-
+        long totalSeconds = (long) (milliseconds / 1000.0);
+        long days = totalSeconds / 86400L;
+        long hours = totalSeconds % 86400L / 3600L;
+        long minutes = totalSeconds % 3600L / 60L;
+        long seconds = totalSeconds % 60L;
         StringBuilder result = new StringBuilder();
-
-        if (days > 0) {
+        if (days > 0L) {
             result.append(days).append("j ");
         }
-        if (hours > 0) {
+        if (hours > 0L) {
             result.append(hours).append("h ");
         }
-        if (minutes > 0) {
+        if (minutes > 0L) {
             result.append(minutes).append("m ");
         }
-        if (seconds > 0 || result.length() == 0) {
+        if (seconds > 0L || result.length() == 0) {
             result.append(seconds).append("s");
         }
-
         return result.toString().trim();
     }
 
     public static String calculateDifference(double current, double target) {
-        return format(target - current);
+        return TimeUnit.format(target - current);
     }
 
     public static long millisUntilNextHour() {
         long now = System.currentTimeMillis();
-        return now - (now % (60 * 60 * 1000)) + (60 * 60 * 1000);
+        return now - now % 3600000L + 3600000L;
     }
 
-    /**
-     * Calcule le temps en millisecondes jusqu'au prochain intervalle
-     * @param intervalMs Intervalle en millisecondes (ex: 60000 pour 1 minute, 3600000 pour 1 heure)
-     * @return Millisecondes jusqu'au prochain intervalle complet
-     */
     public static long millisUntilNext(long intervalMs) {
         long now = System.currentTimeMillis();
         long remainder = now % intervalMs;
         return intervalMs - remainder;
     }
 }
+

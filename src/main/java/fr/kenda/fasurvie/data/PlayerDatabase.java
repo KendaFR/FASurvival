@@ -1,7 +1,6 @@
 package fr.kenda.fasurvie.data;
 
 public class PlayerDatabase {
-
     private final int id;
     private final String playerName;
     private final int coins;
@@ -13,14 +12,15 @@ public class PlayerDatabase {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public String getPlayerName() {
-        return playerName;
+        return this.playerName;
     }
 
     public int getCoins() {
-        return coins;
+        return this.coins;
     }
 }
+

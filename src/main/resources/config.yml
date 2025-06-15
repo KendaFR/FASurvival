@@ -50,3 +50,121 @@ refresh_time: -1
 bot:
   token: "ID"
   channel_id: "ID"
+
+
+allowed_mobs: ["zombie", "skeleton", "creeper", "wither", "iron_golem"]
+allowed_items: ["cooked_beef", "golden_apple"]
+allowed_effects: ["speed", "increase_damage"]
+
+
+book:
+  1:
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - "§0§l   SERVEUR MC   "
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - ""
+    - "§lBienvenue §r§7!"
+    - "§0Merci de lire le"
+    - "§0manuel pour"
+    - "§0connaître le serveur"
+    - ""
+    - "§7→ §3[page 2](§7Règles§3)"
+    - "§7→ §3[page 4](§7Guide§3)"
+
+  2:
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - "§c§l   REGLEMENT   "
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - ""
+    - "§4§l✗ §c§lCheat/XRay"
+    - "§4§l✗ §c§lSpawn kill"
+    - "§4§l✗ §c§lDuplication"
+    - "§8→ §4§lBAN §r§8définitif"
+    - ""
+    - "§2§l✓ §a§lPillage/Grief"
+    - "§2§l✓ §a§lPvP partout"
+    - "§2§l✓ §a§lAlliance/Trahison"
+
+  3:
+    - "§cAttention au chat"
+    - "§cvocal !"
+    - "§cTout propos"
+    - "§coffensant, insultant"
+    - "§cmysogyne, raciste, ou"
+    - "§ctout comportement"
+    - "§csimilaire, peut"
+    - "§centraîner un kick du"
+    - "§cserveur !"
+    - ""
+    - "§7→ §3[page 1](§7Menu§3)"
+
+  4:
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - "§6§l     Guide     "
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - ""
+    - "[page 5](§0§l[Marchand])"
+    - "[page 6](§0§l[§7Fresh§aCoins§0§l])"
+    - "[page 9](§0§l[§6Leaderboard§0§l])"
+    - ""
+    - "§7→ §3[page 1](§7Menu§3)"
+
+  5:
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - "§6§l   Marchand    "
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - ""
+    - "§0Pour trouver le"
+    - "§0marchand, allez en :"
+    - "§0X: §a§l{X}"
+    - "§0Y: §a§l{Y}"
+    - "§0Z: §a§l{Z}"
+    - ""
+    - "§0Clic droit dessus"
+    - "§0pour échanger vos"
+    - "§0coins !"
+
+  6:
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - "§6§l  §7Fresh§aCoins    "
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - ""
+    - "§0Pour monter dans le"
+    - "§0classement vous devez"
+    - "§0crafter le §7Fresh§aCoins"
+
+  7:
+    - ""
+    - "§c§lAttention ! Le"
+    - "§c§l§7Fresh§aCoins§c§l n'est pas"
+    - "§c§lassocié à votre"
+    - "§c§lcompte, et peut être"
+    - "§c§lrécupéré par"
+    - "§c§ld'autres joueurs !"
+
+  8:
+    - "§6§lCraft :"
+    - ""
+    - "§aE§7D§aE"
+    - "§7D§dN§7D"
+    - "§aE§7D§aE"
+    - ""
+    - "§aE: Emeraude"
+    - "§7D: Diamant"
+    - "§dN: Etoile du Nether"
+
+  9:
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - "§6§l  Leaderboard   "
+    - "§8≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+    - ""
+    - "§0Le leaderboard est"
+    - "§0actualisé à chaque"
+    - "§0item placé dans le"
+    - "§0marchand."
+    - ""
+    - "§0Il se réinitialise"
+    - "§0chaque semaine."
+    - ""
+    - "§0Bonne chance à vous"
+    - "§0:)"

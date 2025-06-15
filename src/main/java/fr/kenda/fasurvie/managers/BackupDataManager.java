@@ -1,246 +1,428 @@
 package fr.kenda.fasurvie.managers;
 
+import fr.kenda.fasurvie.FASurvival;
 import fr.kenda.fasurvie.data.PlayerData;
 import fr.kenda.fasurvie.util.Logger;
-import fr.kenda.fasurvie.util.TimeUnit;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Manager for handling database backups with weekly automatic resets
+ * and archiving of old backup files.
+ */
 public class BackupDataManager implements IManager {
-    private static final int BUFFER_SIZE = 16 * 1024;
+
+    // Constants
+    private static final int BUFFER_SIZE = 16384;
     private static final int MAX_BACKUPS = 30;
     private static final String ZIP_ARCHIVE = "archives_backup.zip";
+    private static final String DB_EXTENSION = ".db";
+    private static final long TICKS_PER_SECOND = 20L;
+    private static final long TICKS_PER_MINUTE = 60L * TICKS_PER_SECOND;
+    private static final long TICKS_PER_HOUR = 60L * TICKS_PER_MINUTE;
+    private static final long WEEKLY_CHECK_INTERVAL = 24L * TICKS_PER_HOUR; // Check every 24 hours
+
+    // Date formatters
+    private static final DateTimeFormatter WEEKLY_BACKUP_FORMAT = DateTimeFormatter.ofPattern("dd_MM_yy_00_00_00");
+    private static final DateTimeFormatter TEST_BACKUP_FORMAT = DateTimeFormatter.ofPattern("dd_MM_yy_HH_mm_ss");
+
+    // Instance variables
     private final JavaPlugin plugin;
     private final DatabaseManager dbManager;
     private final File databaseFolder;
     private final String dbName;
-    private final AtomicBoolean runningBackup = new AtomicBoolean(false);
+    private final AtomicBoolean isBackupRunning = new AtomicBoolean(false);
+
+    // Scheduled tasks
+    private BukkitTask weeklyBackupTask;
+    private BukkitTask testBackupTask;
 
     public BackupDataManager(JavaPlugin plugin, DatabaseManager dbManager, String dbName) {
-        this.plugin = plugin;
-        this.dbManager = dbManager;
+        this.plugin = Objects.requireNonNull(plugin, "Plugin cannot be null");
+        this.dbManager = Objects.requireNonNull(dbManager, "DatabaseManager cannot be null");
+        this.dbName = Objects.requireNonNull(dbName, "Database name cannot be null");
         this.databaseFolder = new File(plugin.getDataFolder(), "database");
-        this.dbName = dbName;
-    }
 
-    public void start() {
-        Calendar now = Calendar.getInstance();
-        Calendar nextMonday = (Calendar) now.clone();
-
-        // On met à lundi de la semaine prochaine à 00h00
-        int daysUntilMonday = (Calendar.MONDAY - now.get(Calendar.DAY_OF_WEEK) + 7) % 7;
-        if (daysUntilMonday == 0 && (
-                now.get(Calendar.HOUR_OF_DAY) > 0 ||
-                        now.get(Calendar.MINUTE) > 0 ||
-                        now.get(Calendar.SECOND) > 0 ||
-                        now.get(Calendar.MILLISECOND) > 0)) {
-            // Si c'est déjà lundi dans la journée, prend LUNDI PROCHAIN
-            daysUntilMonday = 7;
-        }
-        nextMonday.add(Calendar.DAY_OF_YEAR, daysUntilMonday);
-        nextMonday.set(Calendar.HOUR_OF_DAY, 0);
-        nextMonday.set(Calendar.MINUTE, 0);
-        nextMonday.set(Calendar.SECOND, 0);
-        nextMonday.set(Calendar.MILLISECOND, 0);
-
-        long millisUntilNextMonday = nextMonday.getTimeInMillis() - now.getTimeInMillis();
-        long seconds = millisUntilNextMonday / 1000;
-        long minutes = seconds / 60;
-        long hours = minutes / 60;
-        long days = hours / 24;
-        String waitStr = String.format("%sd %02dh %02dm %02ds",
-                days,
-                hours % 24,
-                minutes % 60,
-                seconds % 60);
-
-        long ticksUntilNextMonday = millisUntilNextMonday / 50; // 1 tick = 50ms
-        Logger.info("Lancement de la backup dans " + waitStr);
-
-        // 2. Lance un runTaskLater pour le premier backup
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                asyncWeeklyReset();
-
-                // 3. Puis toutes les 24h
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        Calendar n = Calendar.getInstance();
-                        if (n.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY &&
-                                n.get(Calendar.HOUR_OF_DAY) == 0 &&
-                                n.get(Calendar.MINUTE) == 0) {
-                            asyncWeeklyReset();
-                        }
-                    }
-                }.runTaskTimerAsynchronously(plugin, 20 * 60 * 60 * 24, 20 * 60 * 60 * 24); // 24h en ticks
-            }
-        }.runTaskLaterAsynchronously(plugin, ticksUntilNextMonday);
-    }
-
-    public void runTestScheduler() {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                backupNowTest();
-            }
-        }.runTaskTimerAsynchronously(plugin, 0, 20);
-    }
-
-    public void backupNowTest() {
-        if (!runningBackup.compareAndSet(false, true)) return;
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            try {
-                File currentDbFile = new File(databaseFolder, dbName + ".db");
-                if (!currentDbFile.exists()) {
-                    plugin.getLogger().warning("[Scheduler] Fichier DB absent pour backup test.");
-                    return;
-                }
-                File backupFile = new File(databaseFolder, getTestBackupName());
-                Files.copy(currentDbFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-                checkAndArchiveOldBackups();
-
-                plugin.getLogger().info("[Backup/Test] Sauvegarde test réalisée: " + backupFile.getName());
-            } catch (Exception e) {
-                plugin.getLogger().severe("[Backup/Test] Backup échouée: " + e.getMessage());
-                e.printStackTrace();
-            } finally {
-                runningBackup.set(false);
-            }
-        });
-    }
-
-    public void asyncWeeklyReset() {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            try {
-                File currentDbFile = new File(databaseFolder, dbName + ".db");
-                if (!currentDbFile.exists()) return;
-
-                File backupFile = new File(databaseFolder, getHebdoBackupName());
-                Files.copy(currentDbFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-                checkAndArchiveOldBackups();
-
-                dbManager.getConnection().createStatement().execute("DELETE FROM player_data");
-                Collection<? extends Player> players = Bukkit.getOnlinePlayers();
-                for (Player player : players) {
-                    Bukkit.getScheduler().runTask(plugin, () -> dbManager.loadData(new PlayerData(player)));
-                }
-
-                plugin.getLogger().info("[Scheduler] Reset BDD & backup hebdomadaire réalisé: " + backupFile.getName());
-            } catch (Exception e) {
-                plugin.getLogger().severe("[Scheduler] Erreur reset hebdomadaire: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
-    }
-
-    /**
-     * Archive (ajoute dans un unique .zip) toutes les .db plus vieilles que les 30 dernières,
-     * puis les supprime. Le zip est incrémental.
-     */
-    private void checkAndArchiveOldBackups() {
-        File[] saves = databaseFolder.listFiles((dir, name) ->
-                name.endsWith(".db") && !name.equals(dbName + ".db"));
-        if (saves == null || saves.length <= MAX_BACKUPS) return;
-
-        Arrays.sort(saves, Comparator.comparingLong(File::lastModified));
-        int toArchive = saves.length - MAX_BACKUPS;
-
-        List<File> toZip = Arrays.asList(Arrays.copyOfRange(saves, 0, toArchive));
-        if (toZip.isEmpty()) return;
-
-        File zipFile = new File(databaseFolder, ZIP_ARCHIVE);
-
-        // Ajout incrémental au zip
-        try (FileOutputStream fos = new FileOutputStream(zipFile, true);
-             BufferedOutputStream bos = new BufferedOutputStream(fos)) {
-            // ATTENTION : on utiliser zipFs pour append proprement, car Java ne permet pas de "rajouter" à un zip natif facilement
-            // Solution simple : recopier l'existant + les nouveaux (un peu plus lent, mais sûr, et on garde compatibilité universelle)
-            File tmpZip = File.createTempFile("tempzip", ".zip", databaseFolder);
-            if (zipFile.exists()) {
-                Files.copy(zipFile.toPath(), tmpZip.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                zipFile.delete();
-            }
-            try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile, false))) {
-                // Re-copy old entries
-                if (tmpZip.exists()) {
-                    try (java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(new FileInputStream(tmpZip))) {
-                        ZipEntry entry;
-                        byte[] buffer = new byte[BUFFER_SIZE];
-                        while ((entry = zis.getNextEntry()) != null) {
-                            zos.putNextEntry(new ZipEntry(entry.getName()));
-                            int len;
-                            while ((len = zis.read(buffer)) > 0) {
-                                zos.write(buffer, 0, len);
-                            }
-                            zos.closeEntry();
-                            zis.closeEntry();
-                        }
-                    }
-                    tmpZip.delete();
-                }
-
-                // Add new .db files!
-                byte[] buffer = new byte[BUFFER_SIZE];
-                for (File dbFile : toZip) {
-                    try (FileInputStream fis = new FileInputStream(dbFile)) {
-                        zos.putNextEntry(new ZipEntry(dbFile.getName()));
-                        int len;
-                        while ((len = fis.read(buffer)) != -1) {
-                            zos.write(buffer, 0, len);
-                        }
-                        zos.closeEntry();
-                    }
-                    dbFile.delete();
-                }
-            }
-            plugin.getLogger().info("[Backup] Archivé " + toZip.size() + " save(s) dans " + zipFile.getName());
-        } catch (Exception ex) {
-            plugin.getLogger().warning("[Backup] Erreur d'archivage .zip: " + ex.getMessage());
-            ex.printStackTrace();
+        // Ensure database folder exists
+        if (!databaseFolder.exists() && !databaseFolder.mkdirs()) {
+            throw new IllegalStateException("Cannot create database folder: " + databaseFolder.getAbsolutePath());
         }
     }
 
     @Override
     public void register() {
+        // Implementation depends on IManager interface requirements
+        plugin.getLogger().info("[BackupManager] Registered backup manager");
     }
 
     @Override
     public void unregister() {
+        // Cancel scheduled tasks
+        if (weeklyBackupTask != null && !weeklyBackupTask.isCancelled()) {
+            weeklyBackupTask.cancel();
+        }
+        if (testBackupTask != null && !testBackupTask.isCancelled()) {
+            testBackupTask.cancel();
+        }
+
+        plugin.getLogger().info("[BackupManager] Unregistered backup manager");
     }
 
-    private String getHebdoBackupName() {
-        Calendar cal = Calendar.getInstance();
-        String pattern = "%02d_%02d_%02d_00_00_00_.db";
-        return String.format(pattern,
-                cal.get(Calendar.DAY_OF_MONTH) - 7,
-                cal.get(Calendar.MONTH) + 1,
-                cal.get(Calendar.YEAR) % 100
-        );
+    /**
+     * Starts the weekly backup scheduler
+     */
+    public void start() {
+        scheduleWeeklyBackup();
+        plugin.getLogger().info("[BackupManager] Weekly backup scheduler started");
     }
 
-    private String getTestBackupName() {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MINUTE, -1);
-        String pattern = "%02d_%02d_%02d_%02d_%02d_%02d.db";
-        return String.format(pattern,
-                cal.get(Calendar.DAY_OF_MONTH),
-                cal.get(Calendar.MONTH) + 1,
-                cal.get(Calendar.YEAR) % 100,
-                cal.get(Calendar.HOUR_OF_DAY),
-                cal.get(Calendar.MINUTE),
-                cal.get(Calendar.SECOND));
+    /**
+     * Starts a test backup scheduler (runs every second for testing)
+     */
+    public void runTestScheduler() {
+        if (testBackupTask != null && !testBackupTask.isCancelled()) {
+            testBackupTask.cancel();
+        }
+
+        testBackupTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                performTestBackup();
+            }
+        }.runTaskTimerAsynchronously(plugin, 0L, TICKS_PER_SECOND);
+
+        plugin.getLogger().info("[BackupManager] Test backup scheduler started");
+    }
+
+    /**
+     * Performs a test backup
+     */
+    public void performTestBackup() {
+        if (!isBackupRunning.compareAndSet(false, true)) {
+            return; // Backup already running
+        }
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                File currentDbFile = getCurrentDatabaseFile();
+                if (!currentDbFile.exists()) {
+                    plugin.getLogger().warning("[BackupManager] Database file not found for test backup: " + currentDbFile.getPath());
+                    return;
+                }
+
+                String backupName = generateTestBackupName();
+                File backupFile = new File(databaseFolder, backupName);
+
+                Files.copy(currentDbFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                archiveOldBackups();
+
+                plugin.getLogger().info("[BackupManager] Test backup completed: " + backupFile.getName());
+
+            } catch (Exception e) {
+                plugin.getLogger().severe("[BackupManager] Test backup failed: " + e.getMessage());
+                e.printStackTrace();
+            } finally {
+                isBackupRunning.set(false);
+            }
+        });
+    }
+
+    /**
+     * Performs weekly backup and database reset
+     */
+    public void performWeeklyReset() {
+        if (!isBackupRunning.compareAndSet(false, true)) {
+            plugin.getLogger().warning("[BackupManager] Weekly backup skipped - another backup is running");
+            return;
+        }
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                // Create backup
+                File currentDbFile = getCurrentDatabaseFile();
+                if (!currentDbFile.exists()) {
+                    plugin.getLogger().warning("[BackupManager] Database file not found for weekly backup");
+                    return;
+                }
+
+                String backupName = generateWeeklyBackupName();
+                File backupFile = new File(databaseFolder, backupName);
+
+                Files.copy(currentDbFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                archiveOldBackups();
+
+                // Reset database
+                resetPlayerData();
+
+                plugin.getLogger().info("[BackupManager] Weekly backup and reset completed: " + backupFile.getName());
+
+            } catch (Exception e) {
+                plugin.getLogger().severe("[BackupManager] Weekly backup failed: " + e.getMessage());
+                e.printStackTrace();
+            } finally {
+                isBackupRunning.set(false);
+            }
+        });
+    }
+
+    /**
+     * Schedules the weekly backup task
+     */
+    private void scheduleWeeklyBackup() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextMonday = now.with(TemporalAdjusters.next(DayOfWeek.MONDAY))
+                .withHour(0)
+                .withMinute(0)
+                .withSecond(0)
+                .withNano(0);
+
+        // If it's already Monday at midnight, schedule for next week
+        if (now.getDayOfWeek() == DayOfWeek.MONDAY && now.getHour() == 0 && now.getMinute() == 0) {
+            nextMonday = nextMonday.plusWeeks(1);
+        }
+
+        long ticksUntilNextMonday = calculateTicksUntil(nextMonday);
+        String waitTime = formatDuration(ticksUntilNextMonday);
+
+        Logger.info("Next backup scheduled in: " + waitTime);
+
+        // Schedule initial backup
+        weeklyBackupTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                performWeeklyReset();
+
+                // Schedule recurring weekly backups
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        LocalDateTime current = LocalDateTime.now();
+                        if (current.getDayOfWeek() == DayOfWeek.MONDAY &&
+                                current.getHour() == 0 &&
+                                current.getMinute() == 0) {
+                            FASurvival.getInstance().getManager().getManager(BotManager.class).
+                                    sendWeeklyWinnerEmbed(
+                                            FASurvival.getInstance().getManager().getManager(DatabaseManager.class).getLeaderboard(1).get(0).getPlayerName());
+                            performWeeklyReset();
+                        }
+                    }
+                }.runTaskTimerAsynchronously(plugin, WEEKLY_CHECK_INTERVAL, WEEKLY_CHECK_INTERVAL);
+            }
+        }.runTaskLaterAsynchronously(plugin, ticksUntilNextMonday);
+    }
+
+    /**
+     * Archives old backup files when the limit is exceeded
+     */
+    private void archiveOldBackups() {
+        try {
+            File[] backupFiles = getBackupFiles();
+            if (backupFiles.length <= MAX_BACKUPS) {
+                return;
+            }
+
+            // Sort by modification time (oldest first)
+            Arrays.sort(backupFiles, Comparator.comparingLong(File::lastModified));
+
+            int filesToArchive = backupFiles.length - MAX_BACKUPS;
+            List<File> filesToZip = Arrays.stream(backupFiles)
+                    .limit(filesToArchive)
+                    .collect(Collectors.toList());
+
+            if (filesToZip.isEmpty()) {
+                return;
+            }
+
+            File zipFile = new File(databaseFolder, ZIP_ARCHIVE);
+            archiveFiles(filesToZip, zipFile);
+
+            // Delete archived files
+            filesToZip.forEach(File::delete);
+
+            plugin.getLogger().info("[BackupManager] Archived " + filesToZip.size() + " backup(s) to " + zipFile.getName());
+
+        } catch (Exception e) {
+            plugin.getLogger().warning("[BackupManager] Failed to archive old backups: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Archives files to a ZIP archive
+     */
+    private void archiveFiles(List<File> filesToArchive, File zipFile) throws IOException {
+        File tempZip = null;
+
+        try {
+            // Create temporary file for existing archive content
+            if (zipFile.exists()) {
+                tempZip = File.createTempFile("backup_temp", ".zip", databaseFolder);
+                Files.copy(zipFile.toPath(), tempZip.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                zipFile.delete();
+            }
+
+            try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile))) {
+
+                // Copy existing archive content
+                if (tempZip != null && tempZip.exists()) {
+                    copyExistingZipContent(tempZip, zos);
+                }
+
+                // Add new files to archive
+                addFilesToZip(filesToArchive, zos);
+            }
+
+        } finally {
+            if (tempZip != null && tempZip.exists()) {
+                tempZip.delete();
+            }
+        }
+    }
+
+    /**
+     * Copies existing ZIP content to new ZIP output stream
+     */
+    private void copyExistingZipContent(File existingZip, ZipOutputStream zos) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(existingZip))) {
+            ZipEntry entry;
+            byte[] buffer = new byte[BUFFER_SIZE];
+
+            while ((entry = zis.getNextEntry()) != null) {
+                zos.putNextEntry(new ZipEntry(entry.getName()));
+
+                int len;
+                while ((len = zis.read(buffer)) > 0) {
+                    zos.write(buffer, 0, len);
+                }
+
+                zos.closeEntry();
+                zis.closeEntry();
+            }
+        }
+    }
+
+    /**
+     * Adds files to ZIP output stream
+     */
+    private void addFilesToZip(List<File> files, ZipOutputStream zos) throws IOException {
+        byte[] buffer = new byte[BUFFER_SIZE];
+
+        for (File file : files) {
+            try (FileInputStream fis = new FileInputStream(file)) {
+                zos.putNextEntry(new ZipEntry(file.getName()));
+
+                int len;
+                while ((len = fis.read(buffer)) != -1) {
+                    zos.write(buffer, 0, len);
+                }
+
+                zos.closeEntry();
+            }
+        }
+    }
+
+    /**
+     * Resets player data in the database and reloads online players
+     */
+    private void resetPlayerData() {
+        try (Connection conn = dbManager.getConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.execute("DELETE FROM player_data");
+
+            // Reload data for online players on main thread
+            Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
+            for (Player player : onlinePlayers) {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    try {
+                        dbManager.loadData(new PlayerData(player));
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("[BackupManager] Failed to reload data for player " + player.getName() + ": " + e.getMessage());
+                    }
+                });
+            }
+
+        } catch (SQLException e) {
+            plugin.getLogger().severe("[BackupManager] Failed to reset player data: " + e.getMessage());
+            throw new RuntimeException("Database reset failed", e);
+        }
+    }
+
+    /**
+     * Gets all backup files in the database folder
+     */
+    private File[] getBackupFiles() {
+        File[] files = databaseFolder.listFiles((dir, name) ->
+                name.endsWith(DB_EXTENSION) && !name.equals(dbName + DB_EXTENSION));
+        return files != null ? files : new File[0];
+    }
+
+    /**
+     * Gets the current database file
+     */
+    private File getCurrentDatabaseFile() {
+        return new File(databaseFolder, dbName + DB_EXTENSION);
+    }
+
+    /**
+     * Generates a filename for weekly backup
+     */
+    private String generateWeeklyBackupName() {
+        LocalDateTime weekAgo = LocalDateTime.now().minusWeeks(1);
+        return weekAgo.format(WEEKLY_BACKUP_FORMAT) + DB_EXTENSION;
+    }
+
+    /**
+     * Generates a filename for test backup
+     */
+    private String generateTestBackupName() {
+        LocalDateTime now = LocalDateTime.now().minusMinutes(1);
+        return now.format(TEST_BACKUP_FORMAT) + DB_EXTENSION;
+    }
+
+    /**
+     * Calculates ticks until specified time
+     */
+    private long calculateTicksUntil(LocalDateTime target) {
+        LocalDateTime now = LocalDateTime.now();
+        long seconds = java.time.Duration.between(now, target).getSeconds();
+        return seconds * TICKS_PER_SECOND;
+    }
+
+    /**
+     * Formats duration in ticks to human-readable string
+     */
+    private String formatDuration(long ticks) {
+        long totalSeconds = ticks / TICKS_PER_SECOND;
+        long days = totalSeconds / (24 * 3600);
+        long hours = (totalSeconds % (24 * 3600)) / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+
+        return String.format("%dd %02dh %02dm %02ds", days, hours, minutes, seconds);
     }
 }

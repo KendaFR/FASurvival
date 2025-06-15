@@ -1,5 +1,10 @@
 package fr.kenda.fasurvie.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -8,10 +13,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.*;
-
 public class ItemBuilder {
-    private final ItemStack item;
+    private ItemStack item;
     private Material material;
     private int amount = 1;
     private short damage = 0;
@@ -44,7 +47,7 @@ public class ItemBuilder {
     }
 
     public ItemBuilder(ItemStack item) {
-        Objects.requireNonNull(item, "ItemStack ne peut pas être null.");
+        Objects.requireNonNull(item, "ItemStack ne peut pas \u00eatre null.");
         this.item = item.clone();
         this.material = item.getType();
         this.amount = item.getAmount();
@@ -76,7 +79,7 @@ public class ItemBuilder {
     }
 
     public ItemBuilder color(int colorData) {
-        this.damage = (short) (colorData & 0xF);
+        this.damage = (short)(colorData & 0xF);
         return this;
     }
 
@@ -86,45 +89,45 @@ public class ItemBuilder {
     }
 
     public ItemBuilder material(Material material) {
-        Objects.requireNonNull(material, "Le material ne peut pas être null.");
+        Objects.requireNonNull(material, "Le material ne peut pas \u00eatre null.");
         this.material = material;
         return this;
     }
 
     public ItemBuilder enchant(Enchantment enchant, int level) {
-        Objects.requireNonNull(enchant, "Enchantement ne peut pas être null.");
+        Objects.requireNonNull(enchant, "Enchantement ne peut pas \u00eatre null.");
         this.enchantments.put(enchant, level);
         return this;
     }
 
     public ItemBuilder enchant(Map<Enchantment, Integer> enchantments) {
-        Objects.requireNonNull(enchantments, "Enchantements ne peut pas être null.");
+        Objects.requireNonNull(enchantments, "Enchantements ne peut pas \u00eatre null.");
         this.enchantments = enchantments;
         return this;
     }
 
     public ItemBuilder displayName(String displayName) {
-        Objects.requireNonNull(displayName, "Le displayName ne peut pas être null.");
-        this.displayName = this.andSymbol ? ChatColor.translateAlternateColorCodes('&', displayName) : displayName;
+        Objects.requireNonNull(displayName, "Le displayName ne peut pas \u00eatre null.");
+        this.displayName = this.andSymbol ? ChatColor.translateAlternateColorCodes((char)'&', (String)displayName) : displayName;
         return this;
     }
 
     public ItemBuilder lore(String line) {
-        Objects.requireNonNull(line, "La ligne du lore ne peut pas être nulle.");
-        this.lore.add(this.andSymbol ? ChatColor.translateAlternateColorCodes('&', line) : line);
+        Objects.requireNonNull(line, "La ligne du lore ne peut pas \u00eatre nulle.");
+        this.lore.add(this.andSymbol ? ChatColor.translateAlternateColorCodes((char)'&', (String)line) : line);
         return this;
     }
 
     public ItemBuilder lore(List<String> lore) {
-        Objects.requireNonNull(lore, "Le lore ne peut pas être null.");
+        Objects.requireNonNull(lore, "Le lore ne peut pas \u00eatre null.");
         this.lore = new ArrayList<String>();
         for (String line : lore) {
-            this.lore.add(this.andSymbol ? ChatColor.translateAlternateColorCodes('&', line) : line);
+            this.lore.add(this.andSymbol ? ChatColor.translateAlternateColorCodes((char)'&', (String)line) : line);
         }
         return this;
     }
 
-    public ItemBuilder lore(String... lines) {
+    public ItemBuilder lore(String ... lines) {
         for (String line : lines) {
             this.lore(line);
         }
@@ -135,12 +138,12 @@ public class ItemBuilder {
         while (this.lore.size() <= index) {
             this.lore.add("");
         }
-        this.lore.set(index, this.andSymbol ? ChatColor.translateAlternateColorCodes('&', line) : line);
+        this.lore.set(index, this.andSymbol ? ChatColor.translateAlternateColorCodes((char)'&', (String)line) : line);
         return this;
     }
 
     public ItemBuilder flag(ItemFlag flag) {
-        Objects.requireNonNull(flag, "Le flag ne peut pas être null.");
+        Objects.requireNonNull(flag, "Le flag ne peut pas \u00eatre null.");
         this.flags.add(flag);
         return this;
     }
@@ -224,7 +227,7 @@ public class ItemBuilder {
             meta.setLore(this.lore);
         }
         for (ItemFlag f : this.flags) {
-            meta.addItemFlags(f);
+            meta.addItemFlags(new ItemFlag[]{f});
         }
         this.item.setItemMeta(meta);
         if (!this.enchantments.isEmpty()) {

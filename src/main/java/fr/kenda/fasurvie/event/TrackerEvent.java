@@ -11,21 +11,21 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class TrackerEvent implements Listener {
-
+public class TrackerEvent
+        implements Listener {
     @EventHandler
     public void onClick(PlayerInteractEvent e) {
         ItemStack item = e.getItem();
-        if (item == null)
+        if (item == null) {
             return;
-
-        if (item.getType() == Material.COMPASS && item.hasItemMeta() && item.getItemMeta().hasDisplayName() &&
-                item.getEnchantments().containsKey(Enchantment.ARROW_INFINITE)) {
+        }
+        if (item.getType() == Material.COMPASS && item.hasItemMeta() && item.getItemMeta().hasDisplayName() && item.getEnchantments().containsKey(Enchantment.ARROW_INFINITE)) {
             Action action = e.getAction();
             Player player = e.getPlayer();
-            if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK)
+            if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
                 FASurvival.getInstance().getManager().getManager(TrackerManager.class).useTracker(player);
-
+            }
         }
     }
 }
+

@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 public class Logger {
-
     public static void error(String msg) {
         Bukkit.getConsoleSender().sendMessage(ChatColor.RED + msg);
     }
@@ -17,3 +16,4 @@ public class Logger {
         Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + msg);
     }
 }
+

@@ -1,12 +1,11 @@
 package fr.kenda.fasurvie.updater;
 
 import fr.kenda.fasurvie.util.Logger;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import org.json.JSONObject;
 
 public class PluginUpdater {
     private final String REPO_OWNER = "KendaFR";
@@ -18,7 +17,7 @@ public class PluginUpdater {
             String inputLine;
             String apiUrl = String.format("https://api.github.com/repos/%s/%s/releases/latest", "KendaFR", "FASurvival");
             URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Accept", "application/vnd.github.v3+json");
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -33,10 +32,11 @@ public class PluginUpdater {
             if (!"1.0".equals(latestVersion)) {
                 Logger.info("Une nouvelle version est disponible : " + latestVersion);
             } else {
-                Logger.success("Vous utilisez la dernière version.");
+                Logger.success("Vous utilisez la derni\u00e8re version.");
             }
-        } catch (Exception e) {
-            Logger.error("Erreur lors de la vérification des mises à jour : " + e.getMessage());
+        }
+        catch (Exception e) {
+            Logger.error("Erreur lors de la v\u00e9rification des mises \u00e0 jour : " + e.getMessage());
         }
     }
 }

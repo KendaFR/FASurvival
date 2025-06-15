@@ -8,7 +8,6 @@ import fr.kenda.fasurvie.util.Logger;
 import org.bukkit.entity.Player;
 
 public class PlayerData {
-
     private final Player player;
     private int coins;
 
@@ -18,11 +17,15 @@ public class PlayerData {
     }
 
     public Player getPlayer() {
-        return player;
+        return this.player;
     }
 
     public int getCoins() {
-        return coins;
+        return this.coins;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
     }
 
     public void addCoins(int coins) {
@@ -32,8 +35,8 @@ public class PlayerData {
     public void removeCoins(int coins) {
         this.coins -= coins;
     }
-    public void loadData()
-    {
+
+    public void loadData() {
         Managers managers = FASurvival.getInstance().getManager();
         managers.getManager(DatabaseManager.class).loadData(this);
         managers.getManager(DataManager.class).addPlayerData(this);
@@ -42,12 +45,10 @@ public class PlayerData {
     public void saveData(boolean removeDataAfter) {
         Managers managers = FASurvival.getInstance().getManager();
         managers.getManager(DatabaseManager.class).saveData(this);
-        if (removeDataAfter)
+        if (removeDataAfter) {
             managers.getManager(DataManager.class).removePlayerData(this);
-        Logger.success("Data of " + player.getName() + " saved !");
-    }
-
-    public void setCoins(int coins) {
-        this.coins = coins;
+        }
+        Logger.success("Data of " + this.player.getName() + " saved !");
     }
 }
+

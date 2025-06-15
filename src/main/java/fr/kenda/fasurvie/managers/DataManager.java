@@ -6,41 +6,41 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataManager implements IManager {
-
+public class DataManager
+        implements IManager {
     private List<PlayerData> playerDataList;
 
     @Override
     public void register() {
-        playerDataList = new ArrayList<>();
+        this.playerDataList = new ArrayList<PlayerData>();
     }
 
     @Override
     public void unregister() {
-        playerDataList.clear();
+        this.playerDataList.clear();
     }
 
     public void addPlayerData(PlayerData playerData) {
-        playerDataList.add(playerData);
+        this.playerDataList.add(playerData);
     }
 
     public void removePlayerData(PlayerData playerData) {
-        playerDataList.remove(playerData);
+        this.playerDataList.remove(playerData);
     }
 
     public PlayerData getPlayerDataFromPlayer(Player player) {
-        return playerDataList.stream().filter(playerData -> playerData.getPlayer() == player).findFirst().orElse(null);
+        return this.playerDataList.stream().filter(playerData -> playerData.getPlayer() == player).findFirst().orElse(null);
     }
 
     public void recreate() {
-        playerDataList.forEach(playerData ->
-        {
+        this.playerDataList.forEach(playerData -> {
             playerData.setCoins(0);
             playerData.saveData(false);
         });
     }
 
     public List<PlayerData> getPlayerDataList() {
-        return playerDataList;
+        return this.playerDataList;
     }
 }
+

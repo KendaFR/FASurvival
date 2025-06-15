@@ -8,8 +8,8 @@ import org.bukkit.WorldBorder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class MapManager implements IManager {
-
+public class MapManager
+        implements IManager {
     @Override
     public void register() {
     }
@@ -18,22 +18,18 @@ public class MapManager implements IManager {
     public void unregister() {
     }
 
-    public void setBorder(CommandSender sender, final int centerX, final int centerZ, final int size) {
-        WorldBorder border = getWorldFromSender(sender).getWorldBorder();
+    public void setBorder(CommandSender sender, int centerX, int centerZ, int size) {
+        WorldBorder border = this.getWorldFromSender(sender).getWorldBorder();
         border.setCenter(centerX, centerZ);
         border.setSize(size);
-
-        sender.sendMessage(
-                FASurvival.PREFIX + ChatColor.GREEN +
-                        "Border centrée en (" + centerX + ", " + centerZ + ") avec taille " + size
-        );
+        sender.sendMessage(FASurvival.PREFIX + ChatColor.GREEN + "Border centrée en (" + centerX + ", " + centerZ + ") avec taille " + size);
     }
 
     private World getWorldFromSender(CommandSender sender) {
         if (sender instanceof Player) {
             return ((Player) sender).getWorld();
-        } else {
-            return Bukkit.getWorlds().get(0);
         }
+        return Bukkit.getWorlds().get(0);
     }
 }
+

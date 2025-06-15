@@ -1,6 +1,7 @@
 name: FASurvival
 version: '1.0-SNAPSHOT'
 main: fr.kenda.fasurvie.FASurvival
+api-version: '1.16'
 load: POSTWORLD
 authors: [ Kenda ]
 commands:
@@ -9,3 +10,8 @@ commands:
       - fas
       - FAsurvie
       - FA
+  FAManual:
+    aliases:
+      - aide
+      - manual
+      - manuel

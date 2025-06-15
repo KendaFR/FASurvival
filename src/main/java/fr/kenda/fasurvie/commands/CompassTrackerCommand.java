@@ -9,39 +9,21 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 
-public class CompassTrackerCommand implements SubCommand {
+public class CompassTrackerCommand
+        implements SubCommand {
     @Override
-    public boolean execute(CommandSender sender, String[] args) {
-        if (args.length != 1) {
-            sendHelp(sender);
+    public boolean execute(CommandSender sender, String[] args2, boolean isForced) {
+        if (args2.length != 1) {
+            this.sendHelp(sender);
             return false;
         }
-
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(FASurvival.PREFIX + ChatColor.RED + "Seuls les joueurs peuvent utiliser cette commande.");
-            return true;
-        }
-
-        Player target = Bukkit.getPlayer(args[0]);
+        Player target = Bukkit.getPlayer(args2[0]);
         if (target == null) {
             sender.sendMessage(FASurvival.PREFIX + ChatColor.RED + "Joueur introuvable.");
             return true;
         }
-
         int maxDurability = FASurvival.getInstance().getConfig().getInt("max_durability");
-        target.getInventory().addItem(
-                new ItemBuilder(Material.COMPASS)
-                        .displayName(ChatColor.RED + "Tracker")
-                        .enchant(Enchantment.ARROW_INFINITE,1)
-                        .lore(
-                                ChatColor.GRAY + "Faites un clic droit pour marquer le joueur",
-                                ChatColor.GRAY + "le plus proche.",
-                                ChatColor.RED + "" + ChatColor.BOLD + "Attention, chaque utilisation coûtera",
-                                ChatColor.RED + "" + ChatColor.BOLD + "de la durabilité !",
-                                "",
-                                ChatColor.GRAY + "(" + maxDurability + "/" + maxDurability + ")")
-                        .build()
-        );
+        target.getInventory().addItem(new ItemBuilder(Material.COMPASS).displayName(ChatColor.RED + "Tracker").enchant(Enchantment.ARROW_INFINITE, 1).lore(ChatColor.GRAY + "Faites un clic droit pour marquer le joueur", ChatColor.GRAY + "le plus proche.", ChatColor.RED + "" + ChatColor.BOLD + "Attention, chaque utilisation coûtera", ChatColor.RED + "" + ChatColor.BOLD + "de la durabilité !", "", ChatColor.GRAY + "(" + maxDurability + "/" + maxDurability + ")").build());
         sender.sendMessage(FASurvival.PREFIX + ChatColor.GREEN + "Un tracker vous a été donné !");
         return true;
     }
@@ -53,7 +35,7 @@ public class CompassTrackerCommand implements SubCommand {
 
     @Override
     public void sendHelp(CommandSender sender) {
-        sender.sendMessage(FASurvival.PREFIX + ChatColor.GRAY + "/fas " + getName() + " <player>: " + ChatColor.RED + "Donne une boussole qui indique le joueur le plus proche.");
+        sender.sendMessage(FASurvival.PREFIX + ChatColor.GRAY + "/fas " + this.getName() + " <player>: " + ChatColor.RED + "Donne une boussole qui indique le joueur le plus proche.");
     }
 }
 
