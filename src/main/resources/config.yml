@@ -51,6 +51,11 @@ bot:
   token: "ID"
   channel_id: "ID"
 
+database:
+  url: "url"
+  database: "database"
+  user: ""
+  password: ""
 
 allowed_mobs: ["zombie", "skeleton", "creeper", "wither", "iron_golem"]
 allowed_items: ["cooked_beef", "golden_apple"]

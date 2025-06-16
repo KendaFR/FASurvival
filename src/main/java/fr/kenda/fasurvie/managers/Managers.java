@@ -40,7 +40,7 @@ public class Managers {
 
     private void registerManagers() {
         FASurvival instance = FASurvival.getInstance();
-        DatabaseManager db = new DatabaseManager(instance, "player_data");
+        DatabaseManager db = new DatabaseManager(instance, Config.getString("database.database"));
         this.registerManager(new EventManager());
         this.registerManager(new MapManager());
         this.registerManager(new FileManager());
@@ -51,7 +51,6 @@ public class Managers {
         this.registerManager(new DataManager());
         this.registerManager(new ScoreboardManager());
         this.registerManager(new PNJManager(instance));
-        this.registerManager(new BackupDataManager(instance, db, "player_data"));
         this.registerManager(new BotManager(instance.getLogger(), Config.getString("bot.token"), Config.getString("bot.channel_id")));
     }
 }

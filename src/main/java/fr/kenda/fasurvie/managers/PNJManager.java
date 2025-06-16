@@ -31,13 +31,14 @@ public class PNJManager
 
     public PNJManager(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.pnjUUIDs = new HashSet<UUID>();
+        this.pnjUUIDs = new HashSet<>();
     }
 
     @Override
     public void register() {
         this.plugin.getServer().getPluginManager().registerEvents(this, this.plugin);
-        this.pnjName = ChatColor.translateAlternateColorCodes('&', this.plugin.getConfig().getString("pnj.name", "&6&lMarchand de Scores"));
+        this.pnjName = ChatColor.translateAlternateColorCodes('&', this.plugin.getConfig().getString("pnj.name",
+                "&6&lMarchand de Scores"));
         Bukkit.getWorlds().forEach(world -> world.getEntities().forEach(entity -> {
             Villager v;
             if (entity instanceof Villager && (v = (Villager) entity).getCustomName() != null) {

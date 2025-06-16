@@ -1,6 +1,6 @@
 package fr.kenda.fasurvie;
 
-import fr.kenda.fasurvie.managers.BackupDataManager;
+import fr.kenda.fasurvie.managers.DatabaseManager;
 import fr.kenda.fasurvie.managers.Managers;
 import fr.kenda.fasurvie.updater.PluginUpdater;
 import org.bukkit.Bukkit;
@@ -20,7 +20,8 @@ public final class FASurvival
             new PluginUpdater().checkForUpdates();
         }
         this.manager = new Managers();
-        Bukkit.getScheduler().runTaskLater(this, () -> this.manager.getManager(BackupDataManager.class).start(), 60L);
+        Bukkit.getScheduler().runTaskLater(this, () -> this.manager.getManager(DatabaseManager.class).startBackupScheduler(), 60L);
+        //Bukkit.getScheduler().runTaskLater(this, () -> this.manager.getManager(DatabaseManager.class).performTestBackup(), 60L);
     }
 
     public void onDisable() {

@@ -70,7 +70,7 @@ public class ScoreGUI
             return;
         }
         Player player = (Player) event.getPlayer();
-        List items = Arrays.stream(this.inventory.getContents()).filter(item -> item != null && item.getType() != Material.AIR).map(ItemStack::clone).collect(Collectors.toList());
+        List<ItemStack> items = Arrays.stream(this.inventory.getContents()).filter(item -> item != null && item.getType() != Material.AIR).map(ItemStack::clone).collect(Collectors.toList());
         if (!items.isEmpty()) {
             this.tempStorage.put(player.getUniqueId(), items);
             Bukkit.getScheduler().runTaskAsynchronously(FASurvival.getInstance(), () -> this.processCoinsAsync(player.getUniqueId()));
@@ -98,7 +98,9 @@ public class ScoreGUI
     }
 
     private boolean isFreshCoins(ItemStack item) {
-        return item != null && item.getType() != Material.AIR && item.hasItemMeta() && item.getItemMeta().getDisplayName() != null && item.getItemMeta().getDisplayName().equalsIgnoreCase(Constant.FRESH_COIN);
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return false;
+        Objects.requireNonNull(item.getItemMeta()).getDisplayName();
+        return item.getItemMeta().getDisplayName().equalsIgnoreCase(Constant.FRESH_COIN);
     }
 
     private void saveCoinsPlayer(Player player, int coins) {
@@ -112,4 +114,3 @@ public class ScoreGUI
         }, 20L);
     }
 }
-
