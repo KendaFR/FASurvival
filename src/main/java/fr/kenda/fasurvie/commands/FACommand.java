@@ -40,14 +40,10 @@ public class FACommand
             this.sendHelp(sender);
             return true;
         }
-        Player target = Bukkit.getPlayer(args2[1]);
-        if(target == null) return false;
+
         for (SubCommand subCmd : this.subCommands) {
             if (!args2[0].equalsIgnoreCase(subCmd.getName())) continue;
             String[] newArgs = Arrays.copyOfRange(args2, 1, args2.length);
-
-            String fullCommand = label + " " + String.join(" ", args2);
-            Logger.info("Commande exécutée par " + sender.getName() + ": /" + fullCommand);
 
             return subCmd.execute(sender, newArgs, label.equalsIgnoreCase("fasf"));
         }

@@ -83,8 +83,7 @@ public class KitCommand
             return;
         }
         try {
-            ItemStack[] k;
-            for (ItemStack itemStack : k = InventorySerialize.deserializeInventory(kitData)) {
+            for (ItemStack itemStack : InventorySerialize.deserializeInventory(kitData)) {
                 if (itemStack == null) continue;
                 HashMap<Integer, ItemStack> left = t.getInventory().addItem(itemStack);
                 if (left.isEmpty()) continue;
